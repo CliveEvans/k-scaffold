@@ -1,0 +1,73 @@
+//- Standalone sheet dedicated to regression-testing attribute_proxy fixes ported from mmprototype.
+//- Named with leading 'z' so that, in the alphabetical build order of processSheet.js, this file is
+//- the last one processed and its generated bundle is what __tests__/testFramework.js ends up containing.
+//- See __tests__/proxyRegression.test.js for the corresponding tests.
+include k-scaffold
+
+//- Fix #1 & #2: set trap no-op writes should not queue updates
++hidden({name:'proxy noop val',value:0,trigger:{triggeredFuncs:['proxyTest_noopWrite']}})
+
+//- Fix #3: callback preservation across cascade queue
++hidden({name:'proxy cascade source',value:0,trigger:{affects:['proxy_cascade_target'],triggeredFuncs:['proxyTest_cascadeCallback']}})
++hidden({name:'proxy cascade target',value:0,trigger:{calculation:'proxyCalcCascadeTarget'}})
+
+//- Fix #5: non-numeric defaultValue on checkbox should pass through, not be overridden
++checkbox({name:'proxy whisper',value:'/w gm',trigger:{triggeredFuncs:['proxyTest_readWhisper']}})
+
+//- Fix #4: sort/move defer setSectionOrder until after setAttrs commit
++action({name:'proxy sort trigger',trigger:{triggeredFuncs:['proxyTest_sortDefersOrder']}})
++fieldset({name:'proxysort'})
+  +text({name:'label',value:''})
+  +number({name:'weight',value:0})
+
++kscript('proxy-regression')
+  |
+  //- Helper: always read the LIVE scratchpad from environment (beforeEach in tests replaces it).
+  |const _proxyResults = () => {
+  |  if (typeof environment === 'undefined') return {};
+  |  environment.proxyRegressionResults = environment.proxyRegressionResults || {};
+  |  return environment.proxyRegressionResults;
+  |};
+  |
+  |const proxyTest_noopWrite = function({attributes}){
+  |  // Same-value write: fix should not queue; bug always queues.
+  |  const before = Object.keys(attributes.updates).length;
+  |  attributes.proxy_noop_val = attributes.proxy_noop_val;
+  |  const after = Object.keys(attributes.updates).length;
+  |  _proxyResults().noopWrite = {
+  |    before,
+  |    after,
+  |    hasKey: Object.prototype.hasOwnProperty.call(attributes.updates, 'proxy_noop_val')
+  |  };
+  |};
+  |k.registerFuncs({proxyTest_noopWrite});
+  |
+  |const proxyCalcCascadeTarget = function({attributes}){
+  |  return (+attributes.proxy_cascade_source) * 2;
+  |};
+  |k.registerFuncs({proxyCalcCascadeTarget});
+  |
+  |const proxyTest_cascadeCallback = function({attributes}){
+  |  const results = _proxyResults();
+  |  results.cascadeCallback = {cbCount: 0};
+  |  attributes.set({
+  |    callback(){
+  |      _proxyResults().cascadeCallback.cbCount++;
+  |    }
+  |  });
+  |};
+  |k.registerFuncs({proxyTest_cascadeCallback});
+  |
+  |const proxyTest_readWhisper = function({attributes}){
+  |  // Raw stored value is '/w gm'; proxy must return that, not coerce to defaultValue (0).
+  |  _proxyResults().readWhisper = {value: attributes.proxy_whisper};
+  |};
+  |k.registerFuncs({proxyTest_readWhisper});
+  |
+  |const proxyTest_sortDefersOrder = function({attributes}){
+  |  // Just trigger the sort. The test inspects setAttrs/setSectionOrder mocks' invocationCallOrder
+  |  // to determine relative call timing (IIFE-scope bindings mean we cannot wrap via global.*).
+  |  _proxyResults().sortDefersOrder = {triggered: true};
+  |  attributes.repeating_proxysort.sort((a,b) => (+b.weight) - (+a.weight));
+  |};
+  |k.registerFuncs({proxyTest_sortDefersOrder});
