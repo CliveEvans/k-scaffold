@@ -1,5 +1,13 @@
 # K-scaffold
 ## Changelog
+### 2.7.3
+- **attributesProxy: correct change detection in the set trap.** Previously stringified the entire attributes/updates container objects instead of the compared field, so same-value writes would always queue a spurious update. The fix compares `obj.attributes[prop]` and `obj.updates[prop]` directly, and uses `hasOwnProperty` so falsy updates (`0`, `''`) participate in the comparison.
+- **attributesProxy: preserve `attributes.set({callback})` across cascade-queue processing.** The callback used to be dropped silently when the queue was non-empty, because the recursive `set()` call inside cascade handling was invoked with no callback. Callbacks are now stashed on `_pendingCallback` so they survive the round trip and fire once when the flush completes.
+- **attributesProxy: defer `setSectionOrder` in `sort()` and `move()` until after pending `setAttrs` commits.** Previously fired synchronously inside the sort, which raced with row creation/writes from the same sort callback. Deferring via an `attributes.set({callback})` ensures setAttrs lands first.
+- **attributesProxy: stop clobbering non-numeric checkbox values with numeric `defaultValue`.** The getter used to substitute the cascade's `defaultValue` whenever `typeof defaultValue === 'number'`, which silently returned `0` for checkboxes whose checked value was a non-numeric string like `/w gm`. The check is now scoped to `type === 'number'`. **Behavior change**: attributes whose cascade has a numeric `defaultValue` but a non-`number` type will now pass through their raw stored value instead of the default. Sheets that relied on the old coercion should declare `type: 'number'` explicitly.
+- **Build: watch-loop fix.** `k-build --watch` would spontaneously process the same source files many times in a row (often 30+) for no visible reason, with the storm eventually clearing on its own. Root cause: external processes on Windows (antivirus, search indexer) touch file metadata and fire `node-watch` events without real content changes; the watcher had no debouncing or change-detection, so each event ran the full pipeline. Fix applies a 300 ms per-file trailing debounce and an MD5 content-hash cache that makes `processSheet` a no-op when the file's bytes are unchanged. Also fixes a latent bug in the `node_modules` skip regex that never matched on Windows (`\node_modules\`) because it only checked forward slashes.
+- **Tests: added `setSectionOrder` mock to `mock20.js`** so generated test frameworks can exercise sort/move paths without `ReferenceError`.
+
 ### 2.5.5
 - Updates k.send so that sheetworkers running on the called sheet will get the correct values even if that sheet has not been opened.
 ### 2.5.4
