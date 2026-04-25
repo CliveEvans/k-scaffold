@@ -7,6 +7,10 @@
 - **attributesProxy: stop clobbering non-numeric checkbox values with numeric `defaultValue`.** The getter used to substitute the cascade's `defaultValue` whenever `typeof defaultValue === 'number'`, which silently returned `0` for checkboxes whose checked value was a non-numeric string like `/w gm`. The check is now scoped to `type === 'number'`. **Behavior change**: attributes whose cascade has a numeric `defaultValue` but a non-`number` type will now pass through their raw stored value instead of the default. Sheets that relied on the old coercion should declare `type: 'number'` explicitly.
 - **Build: watch-loop fix.** `k-build --watch` would spontaneously process the same source files many times in a row (often 30+) for no visible reason, with the storm eventually clearing on its own. Root cause: external processes on Windows (antivirus, search indexer) touch file metadata and fire `node-watch` events without real content changes; the watcher had no debouncing or change-detection, so each event ran the full pipeline. Fix applies a 300 ms per-file trailing debounce and an MD5 content-hash cache that makes `processSheet` a no-op when the file's bytes are unchanged. Also fixes a latent bug in the `node_modules` skip regex that never matched on Windows (`\node_modules\`) because it only checked forward slashes.
 - **Tests: added `setSectionOrder` mock to `mock20.js`** so generated test frameworks can exercise sort/move paths without `ReferenceError`.
+- **Tests: fixed `underscore` import in `mock20.js`** so the generated test framework can use the lodash-style helpers via the default-imported binding. Changes `import { _ } from 'underscore'` to `import _ from 'underscore'`. (Community PR #143 from @CliveEvans.)
+
+### 2.7.2
+- **attributesProxy: fixed row deletion** in repeating sections (`lib/scripts/attribute_proxy.js`).
 
 ### 2.5.5
 - Updates k.send so that sheetworkers running on the called sheet will get the correct values even if that sheet has not been opened.
