@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import path from 'path';
 import { pathToFileURL } from 'url';
+import colors from 'colors';
 import {
   reducerForCycle,
   formatStatusBar,
@@ -8,6 +9,12 @@ import {
   formatSourceFiles,
   extractSourceFile,
 } from '../../lib/render/reporter.js';
+
+// The `colors` module disables ANSI codes when stdout is not a TTY (CI runners
+// pipe output, so `colors.enabled` defaults to false there). Force-enable so
+// the colour-comparison tests below see the actual escape sequences instead of
+// identical plain strings on local-vs-CI.
+colors.enable();
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -296,8 +303,10 @@ describe('formatSourceFiles', () => {
 // ---------------------------------------------------------------------------
 
 describe('extractSourceFile', () => {
-  // Use a consistent project root for all tests
-  const projectRoot = path.resolve('C:\\projects\\my-sheet');
+  // Use a consistent project root for all tests. `path.resolve('/projects/my-sheet')`
+  // is absolute on both POSIX (`/projects/my-sheet`) and Windows
+  // (`C:\projects\my-sheet`), so the test works regardless of platform.
+  const projectRoot = path.resolve('/projects/my-sheet');
 
   it('returns null when err has no file info', () => {
     expect(extractSourceFile({}, projectRoot)).toBeNull();
