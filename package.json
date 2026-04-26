@@ -1,6 +1,6 @@
 {
   "name": "@kurohyou/k-scaffold",
-  "version": "2.7.2",
+  "version": "2.8.0",
   "description": "This framework simplifies the task of writing code for Roll20 character sheets. It aims to provide an easier interface between the html and sheetworkers with some minor css templates.",
   "main": "index.js",
   "bin": {
@@ -34,6 +34,7 @@
     "colors": "^1.4.0",
     "i18nreplacer": "^1.0.1",
     "jsdom": "^22.1.0",
+    "log-update": "^4.0.0",
     "node-watch": "^0.7.4",
     "pug": "^3.0.2",
     "sass": "^1.69.5",
