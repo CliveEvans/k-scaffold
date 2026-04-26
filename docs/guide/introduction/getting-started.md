@@ -94,5 +94,17 @@ This basic config file will set the scaffold up to:
 - Place the created test framework in the `__tests__` directory.
 - use the `sheet.json`, `translation.json`, and `readme.md` located in `source/` as the templates for your `sheet.json` and `translation.json` files.
 - we are not using [single file components](/k-scaffold/guide/creating-content/sfc.html).
+### Watch mode dashboard
+When you run `k-build --watch` (or the `dev` script above), the K-scaffold enters **watch mode**: it rebuilds automatically whenever a source file changes. In watch mode the terminal shows a live dashboard instead of plain log output:
+
+```
+─── My Sheet Status ─────────────────────────────────────
+<error messages from the most recent build cycle>
+─────────────────────────────────────────────────────────
+| sheet.pug | sheet.scss | translation.json / sheet.json |
+-> src/components/_broken.pug
+```
+
+The bottom bar shows each tracked file coloured **green** (success) or **red** (error). When a build fails, the source file responsible is listed below the bar as a `->` entry so you can jump straight to the problem. The bar stays locked at the bottom of the terminal; error output scrolls above it.
 ## Next?
 Now that the K-scaffold is set up and your file structure is complete, you'll need to create your first pug and scss files in your source directory. These will be the master files that your HTML and CSS will be created from.
