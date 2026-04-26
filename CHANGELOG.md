@@ -1,6 +1,6 @@
 # K-scaffold
 ## Changelog
-### 2.7.3
+### 2.8.0
 - **attributesProxy: correct change detection in the set trap.** Previously stringified the entire attributes/updates container objects instead of the compared field, so same-value writes would always queue a spurious update. The fix compares `obj.attributes[prop]` and `obj.updates[prop]` directly, and uses `hasOwnProperty` so falsy updates (`0`, `''`) participate in the comparison.
 - **attributesProxy: preserve `attributes.set({callback})` across cascade-queue processing.** The callback used to be dropped silently when the queue was non-empty, because the recursive `set()` call inside cascade handling was invoked with no callback. Callbacks are now stashed on `_pendingCallback` so they survive the round trip and fire once when the flush completes.
 - **attributesProxy: defer `setSectionOrder` in `sort()` and `move()` until after pending `setAttrs` commits.** Previously fired synchronously inside the sort, which raced with row creation/writes from the same sort callback. Deferring via an `attributes.set({callback})` ensures setAttrs lands first.
