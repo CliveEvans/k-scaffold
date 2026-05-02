@@ -88,6 +88,33 @@ describe('mock20 dice parser', () => {
     expect(roll.results.result.result).toBe(5);
   });
 
+  it('honors exploding dice on maximum rolls', async () => {
+    environment.diceStack[6] = [3, 2, 4, 6];
+
+    const roll = await startRoll('&{template:default} {{result=[[3d6!+2]]}}');
+
+    expect(roll.results.result.dice).toEqual([6, 4, 2, 3]);
+    expect(roll.results.result.result).toBe(17);
+  });
+
+  it('honors chained exploding dice', async () => {
+    environment.diceStack[6] = [2, 6, 6];
+
+    const roll = await startRoll('&{template:default} {{result=[[1d6!]]}}');
+
+    expect(roll.results.result.dice).toEqual([6, 6, 2]);
+    expect(roll.results.result.result).toBe(14);
+  });
+
+  it('honors exploding dice compare points', async () => {
+    environment.diceStack[6] = [2, 3, 5, 1, 6];
+
+    const roll = await startRoll('&{template:default} {{result=[[3d6!>5+2]]}}');
+
+    expect(roll.results.result.dice).toEqual([6, 1, 5, 3, 2]);
+    expect(roll.results.result.result).toBe(19);
+  });
+
   it('preserves existing behavior for rolls without keep modifiers', async () => {
     environment.diceStack[6] = [4, 6, 2];
 
